@@ -1,76 +1,78 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include "parameters.h"
+#include "animal.h"
 
-class Herbivore {
-    public:
-        Herbivore( int age, double weight ) {
-            std::cout << "INSIDER HERBIVORE CONSTRUCTOR" << std::endl;
-            setAge(age);
-            setWeight(weight);
-        }
 
-        void setWeight( double weight );
-        void setAge( int age );
-        void ageOneYear();
-        double eat( double fodder );
 
-    private:
-        int age;
-        double weight;
-};
+Herbivore::Herbivore( int a, double w, herbivoreParam& p ): param(p) {
+    age = a;
+    weight = w;
+}
 
 void Herbivore::setWeight( double w ) {
-        std::cout << "SETTING WEIGHT " << w << std::endl;
         weight = w;
 }
 
+void Herbivore::setParam( herbivoreParam & p ) {
+        param = p;
+}
+
 void Herbivore::setAge( int a ) {
-        std::cout << "SETTING AGE " << a << std::endl;
         age = a;
 }
 
 void Herbivore::ageOneYear() {
     ++age;
-    std::cout << age << std::endl;
+}
+
+double Herbivore::eat( double fodder ) {
+    double eaten;
+    if ( fodder < param.appetite ) {
+        eaten = fodder;
+        weight += fodder;
+    }
+    else {
+        eaten = param.appetite;
+        weight += param.appetite;
+    }
+    return eaten;
+}
+
+void Herbivore::printParams() {
 }
 
 
-class Lowland {
-    public:
-        Lowland();
+void Herbivore::updateFitness() {
+    double a_factor;
+    double w_factor;
 
-        void setFmax( float x ) {
-            fmax = x; 
-        }
+    a_factor =  1 / (1 + exp(param.phi_age * (age - param.a_half)));
+    w_factor =  1 / (1 + exp(-param.phi_weight * (weight - param.w_half)));
 
-        void resetF() {
-            f = fmax;
-        }
-
-        void insertHerbivore( Herbivore herb ) {
-            std::cout << "Initial number of herbivores: " << herbivores.size() << std::endl;
-            std::cout << "INSERTING HERBIVORE" << std::endl;
-            herbivores.push_back(&herb);
-            std::cout << "Final number of herbivores: " << herbivores.size() << std::endl;
-        }
-
-    private:
-        float fmax;
-        float f;
-        std::vector<Herbivore*> herbivores;
-};        
-
-
-Lowland::Lowland() {
-    std::cout << "INSIDE LOWLAND CONSTRUCTOR" << std::endl;
-    setFmax(700.);
-    resetF();
+    fitness = a_factor * w_factor;
+    std::cout << "Updating fitness: " << fitness << std::endl;
+    std::cout << "a_factor: " << a_factor << std::endl;
+    std::cout << "w_factor: " << w_factor << std::endl;
+    std::cout << "weight: " << weight << std::endl;
+    std::cout << "phi_weight: " << param.phi_weight << std::endl;
+    std::cout << "w_half: " << param.w_half << std::endl;
 }
 
-int main() {
-    Lowland l;
-    Herbivore herb(10, 5.);
-    herb.setWeight(1.);
-    l.insertHerbivore(herb);
-    return 0;
+double Herbivore::getAge() {
+    return age;
 }
+
+double Herbivore::getWeight() {
+    return weight;
+}
+
+double Herbivore::getFitness() {
+    return fitness;
+}
+
+
+
+
+
